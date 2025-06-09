@@ -1,0 +1,237 @@
+<!DOCTYPE html>
+<html lang="vi">
+<head>
+  <meta charset="UTF-8">
+  <title id="dynamicTitle">Chi tiết Profile</title>
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <meta id="dynamicDescription" name="description" content="Xem chi tiết profile cá nhân trên Profiles Website.">
+  <meta id="dynamicOgTitle" property="og:title" content="Chi tiết Profile">
+  <meta id="dynamicOgDescription" property="og:description" content="Xem chi tiết profile cá nhân trên Profiles Website.">
+  <meta id="dynamicOgImage" property="og:image" content="logo.png">
+  <meta property="og:type" content="website">
+  <link rel="icon" href="logo.png">
+  <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
+  <link rel="stylesheet" href="style.css">
+  <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.1/font/bootstrap-icons.css">
+  <!-- Google Analytics -->
+  <script async src="https://www.googletagmanager.com/gtag/js?id=G-XXXXXXXXXX"></script>
+  <script>
+  window.dataLayer = window.dataLayer || [];
+  function gtag(){dataLayer.push(arguments);}
+  gtag('js', new Date());
+  gtag('config', 'G-XXXXXXXXXX');
+  </script>
+</head>
+<body id="profileDetailPage">
+  <div class="container py-5 text-center fade-in" id="profileDetail"></div>
+  <div class="d-flex justify-content-center my-3">
+    <button class="btn btn-warning btn-sm me-2" id="editProfileBtn"><i class="bi bi-pencil"></i> ${t('edit')}</button>
+    <button class="btn btn-danger btn-sm" id="deleteProfileBtn"><i class="bi bi-trash"></i> ${t('delete')}</button>
+  </div>
+  <!-- Modal xác nhận xóa -->
+  <div class="modal fade" id="deleteConfirmModal" tabindex="-1" aria-hidden="true">
+    <div class="modal-dialog modal-dialog-centered">
+      <div class="modal-content">
+        <div class="modal-header">
+          <h5 class="modal-title" id="deleteConfirmModalLabel">${t('confirmDeleteProfile')}</h5>
+          <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="${t('close')}"></button>
+        </div>
+        <div class="modal-body">
+          <p>${t('confirmDeleteMessage')}</p>
+          <div class="alert alert-warning small" role="alert">
+            ${t('actionIrreversible')}
+          </div>
+        </div>
+        <div class="modal-footer">
+          <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">${t('cancel')}</button>
+          <button type="button" class="btn btn-danger" id="confirmDeleteBtn">${t('deletePermanently')}</button>
+        </div>
+      </div>
+    </div>
+  </div>
+  <!-- Modal nhập mã bảo vệ -->
+  <div class="modal fade" id="protectCodeModal" tabindex="-1" aria-hidden="true">
+    <div class="modal-dialog">
+      <div class="modal-content">
+        <div class="modal-header">
+          <h5 class="modal-title">${t('enterProtectCode')}</h5>
+          <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="${t('close')}"></button>
+        </div>
+        <div class="modal-body">
+          <input type="text" class="form-control mb-2" id="inputProtectCode" placeholder="${t('enterProtectCode')}">
+          <div id="protectCodeError" class="text-danger small"></div>
+          <button class="btn btn-primary w-100" id="confirmProtectCodeBtn">${t('confirm')}</button>
+        </div>
+      </div>
+    </div>
+  </div>
+  <div class="position-fixed top-0 end-0 m-3 d-flex align-items-center">
+    <button id="toggleDark" class="btn btn-outline-secondary me-2">🌙 ${t('dark')}</button>
+    <select id="langSelect" class="form-select w-auto">
+      <option value="vi">VI</option>
+      <option value="en">EN</option>
+    </select>
+    <select id="themeSelect" class="form-select w-auto ms-2">
+      <option value="light">Light</option>
+      <option value="dark">Dark</option>
+      <option value="blue">Blue</option>
+      <option value="green">Green</option>
+    </select>
+  </div>
+  <!-- Modal chỉnh sửa profile -->
+  <div class="modal fade" id="editProfileModal" tabindex="-1" aria-hidden="true">
+    <div class="modal-dialog">
+      <div class="modal-content">
+        <div class="modal-header">
+          <h5 class="modal-title">${t('editProfile')}</h5>
+          <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="${t('close')}"></button>
+        </div>
+        <div class="modal-body">
+          <form id="editProfileForm">
+            <input type="hidden" id="editIdx">
+            <div class="mb-3">
+              <label for="editProtectCode" class="form-label">${t('protectCode')}</label>
+              <input type="text" class="form-control" id="editProtectCode" required>
+            </div>
+            <div class="mb-3">
+              <label for="editName" class="form-label">${t('name')}</label>
+              <input type="text" class="form-control" id="editName" required>
+            </div>
+            <div class="mb-3">
+              <label for="editJob" class="form-label">${t('job')}</label>
+              <input type="text" class="form-control" id="editJob" required>
+            </div>
+            <div class="mb-3">
+              <label for="editBio" class="form-label">${t('bio')}</label>
+              <input type="text" class="form-control" id="editBio" required>
+            </div>
+            <div class="mb-3">
+              <label for="editAvatar" class="form-label">${t('avatar')}</label>
+              <input type="file" class="form-control" id="editAvatar" accept="image/*">
+              <img id="editAvatarPreview" src="" alt="Avatar Preview" style="width: 80px; height: 80px; object-fit: cover; border-radius: 8px; margin-top: 8px; display: none;">
+            </div>
+            <div class="mb-3">
+              <label for="editFacebook" class="form-label">Facebook URL</label>
+              <input type="url" class="form-control" id="editFacebook">
+            </div>
+            <div class="mb-3">
+              <label for="editLinkedin" class="form-label">LinkedIn URL</label>
+              <input type="url" class="form-control" id="editLinkedin">
+            </div>
+            <div class="mb-3">
+              <label for="editEmail" class="form-label">Email</label>
+              <input type="email" class="form-control" id="editEmail">
+            </div>
+            <div class="mb-3">
+              <label for="editInstagram" class="form-label">Instagram URL</label>
+              <input type="url" class="form-control" id="editInstagram">
+            </div>
+            <div class="mb-3">
+              <label for="editTiktok" class="form-label">TikTok URL</label>
+              <input type="url" class="form-control" id="editTiktok">
+            </div>
+            <div class="mb-3">
+              <label for="editTwitter" class="form-label">Twitter URL</label>
+              <input type="url" class="form-control" id="editTwitter">
+            </div>
+            <div class="mb-3">
+              <label for="editGithub" class="form-label">Github URL</label>
+              <input type="url" class="form-control" id="editGithub">
+            </div>
+            <div class="mb-3">
+              <label for="editWebsite" class="form-label">Website cá nhân</label>
+              <input type="url" class="form-control" id="editWebsite">
+            </div>
+            <button type="submit" class="btn btn-success">${t('save')}</button>
+            <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">${t('cancel')}</button>
+          </form>
+        </div>
+      </div>
+    </div>
+  </div>
+  <!-- Modal QR code -->
+  <div class="modal fade" id="qrModal" tabindex="-1" aria-hidden="true">
+    <div class="modal-dialog modal-dialog-centered">
+      <div class="modal-content">
+        <div class="modal-header">
+          <h5 class="modal-title">${t('qrCode')}</h5>
+          <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="${t('close')}"></button>
+        </div>
+        <div class="modal-body text-center" id="qrCodeContent"></div>
+      </div>
+    </div>
+  </div>
+  <div id="commentsSection" class="mt-4">
+    <h5>${t('comments')}</h5>
+    <div id="commentsList"></div>
+    <form id="commentForm" class="d-flex mt-2">
+      <input type="text" id="commentNameInput" class="form-control me-2" placeholder="${t('yourName')}" required>
+      <input type="text" id="commentInput" class="form-control me-2" placeholder="${t('enterComment')}" required>
+      <button type="submit" class="btn btn-primary">${t('send')}</button>
+    </form>
+  </div>
+  <button class="btn btn-outline-secondary btn-sm ms-2" onclick="downloadProfileAsImage()">${t('downloadImage')}</button>
+  <button class="btn btn-outline-info btn-sm ms-2" onclick="togglePrivateInfo()">${t('togglePrivateInfo')}</button>
+  <!-- Modal FAQ/Help -->
+  <div class="modal fade" id="faqModal" tabindex="-1" aria-hidden="true">
+    <div class="modal-dialog">
+      <div class="modal-content">
+        <div class="modal-header">
+          <h5 class="modal-title">${t('faqTitle')}</h5>
+          <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="${t('close')}"></button>
+        </div>
+        <div class="modal-body">
+          <ul>
+            <li><b>${t('downloadImageTitle')}:</b> ${t('downloadImageDesc')}</li>
+            <li><b>${t('togglePrivateInfoTitle')}:</b> ${t('togglePrivateInfoDesc')}</li>
+            <li><b>${t('viewsTitle')}:</b> ${t('viewsDesc')}</li>
+            <li><b>${t('favoritesTitle')}:</b> ${t('favoritesDesc')}</li>
+            <li><b>${t('commentsTitle')}:</b> ${t('commentsDesc')}</li>
+            <li><b>${t('shareTitle')}:</b> ${t('shareDesc')}</li>
+          </ul>
+        </div>
+      </div>
+    </div>
+  </div>
+  <!-- Nút mở FAQ -->
+  <button class="btn btn-outline-info btn-sm ms-2" data-bs-toggle="modal" data-bs-target="#faqModal"><i class="bi bi-question-circle"></i> ${t('faq')}</button>
+  <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
+  <script src="https://cdn.jsdelivr.net/npm/html2canvas@1.4.1/dist/html2canvas.min.js"></script>
+  <script type="module" src="main.js"></script>
+</body>
+</html>
+<footer class="text-center py-3 mt-5 small text-muted">
+  &copy; 2024 Profiles Website. All rights reserved. | <a href="#" data-bs-toggle="modal" data-bs-target="#contactModal">Liên hệ</a>
+</footer>
+
+<!-- Contact Modal -->
+<div class="modal fade" id="contactModal" tabindex="-1" aria-hidden="true">
+  <div class="modal-dialog">
+    <div class="modal-content">
+      <div class="modal-header">
+        <h5 class="modal-title">${t('contact')}</h5>
+        <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="${t('close')}"></button>
+      </div>
+      <div class="modal-body text-start">
+        <p>Email: <a href="mailto:your.email@example.com">your.email@example.com</a></p>
+        <p>GitHub: <a href="https://github.com/yourusername/your-repo" target="_blank">yourusername/your-repo</a></p>
+        <p>${t('contactFormTitle')}</p>
+        <form>
+          <div class="mb-3">
+            <label for="contactName" class="form-label">${t('yourName')}</label>
+            <input type="text" class="form-control" id="contactName">
+          </div>
+          <div class="mb-3">
+            <label for="contactEmail" class="form-label">${t('yourEmail')}</label>
+            <input type="email" class="form-control" id="contactEmail">
+          </div>
+          <div class="mb-3">
+            <label for="contactMessage" class="form-label">${t('message')}</label>
+            <textarea class="form-control" id="contactMessage" rows="3"></textarea>
+          </div>
+          <button type="submit" class="btn btn-primary">${t('sendMessage')}</button>
+        </form>
+      </div>
+    </div>
+  </div>
+</div>
